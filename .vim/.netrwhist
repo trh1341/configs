@@ -1,0 +1,9 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =7
+let g:netrw_dirhist_1='/Users/dpayne2/Workspace/api/api-cashtransfer/src/main/java'
+let g:netrw_dirhist_2='/Users/dpayne2/Workspace/api/api-cashtransfer/src/main/java/com'
+let g:netrw_dirhist_3='/Users/dpayne2/Workspace/api/api-cashtransfer/src/main/java/com/etrade'
+let g:netrw_dirhist_4='/Users/dpayne2/Workspace/api/api-cashtransfer/src/main/java/com/etrade/api'
+let g:netrw_dirhist_5='/Users/dpayne2/Workspace/api/api-cashtransfer/src/main/java/com/etrade/api/v1'
+let g:netrw_dirhist_6='/Users/dpayne2/Workspace/api/api-cashtransfer/src/main/java/com/etrade/api/v1/cashtransfer'
+let g:netrw_dirhist_7='/Users/dpayne2/Workspace/api/api-cashtransfer/src/main/java/com/etrade/api/v1/cashtransfer/handler'
