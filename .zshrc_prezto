@@ -1,0 +1,280 @@
+#
+# Executes commands at the start of an interactive session.
+#
+# Authors:
+#   Sorin Ionescu <sorin.ionescu@gmail.com>
+#
+
+# Source Prezto.
+if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
+  source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
+fi
+
+# Customize to your needs...
+
+export PATH=/opt/citrusleaf/bin:/opt/local/bin:/bin:/usr/bin:/usr/local/bin:/Users/dpayne/bin:/usr/X11/bin:/usr/local/git/bin:/usr/local/sbin:/usr/local/share/python/:$PATH
+export PYTHONPATH=/opt/citrusleaf/lib/python/:$PYTHONPATH
+
+#npm
+export PATH=/usr/local/share/npm/bin:$PATH
+
+#postgreSQL
+export PATH=/Library/PostgreSQL/bin:$PATH
+
+#pear
+export PATH=/Users/dpayne/pear/bin:$PATH
+
+alias untar='tar -xvf'
+alias startjdev="/users/dpayne/oracle/middleware/jdeveloper/jdev/bin/jdev"
+alias grey="ssh -p 2202 dpayne@dpayne.dyndns-home.com"
+
+export MPD_HOST="http://www.mympd.in"
+export MPD_PORT="6600"
+export SVN_EDITOR="vim"
+
+#Java setup
+export JAVA_HOME=/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home
+export PATH=$JAVA_HOME/bin:$PATH
+export MEM_MAX_PERM_SIZE="-XX:MaxPermSize=2048m"
+export USER_MEM_ARGS="${MEM_ARGS} ${MEM_MAX_PERM_SIZE} -verbose:gc -XX:+PrintGCTimeStamps -XX:+PrintGCDetails -Xloggc"
+export JAVA_OPTS="-Drole=darbymac"
+
+#maven
+#export M2_HOME=/opt/local/bin/maven/
+export MAVEN_OPTS="-Xmx512m -XX:PermSize=2048m -XX:MaxPermSize=2048m"
+export PATH=$M2_HOME/bin:$PATH
+
+#ruby on rails setup
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm"
+
+export SDK_ROOT="/Users/dpayne/Library/android/tools/"
+export ANDROID_HOME="/Users/dpayne/Library/android/"
+
+export PATH=/opt/local/bin:/opt/local/sbin:$PATH
+export PATH=/usr/local/bin:$PATH
+export MANPATH=/opt/local/share/man:$MANPATH
+
+#aliases
+alias mvn="mvn3"
+alias mc="mvn clean"
+alias mci="mvn clean install"
+alias mcid="mvn clean install -DskipTests"
+alias mcidd="mvn clean install -DskipTests -Dskip.integration.test=true"
+alias mcij="mvn clean install jetty:run"
+alias mcijd="mvn clean install -DskipTests jetty:run"
+alias mcijdd="mvn clean install -DskipTests -Dskip.integration.test=true jetty:run"
+alias k9="kill -9"
+alias express_skel="./node_modules/express/bin/express -c stylu"
+alias box="ssh ops@darbybox.dev-alcfd.com"
+alias box_ftp="sftp ops@darbybox.dev-alcfd.com"
+alias box_jenkins="ssh ops@cis.opscfd.com"
+alias box_adwriter="ssh ops@adwriter1.dev-alcfd.com"
+alias box_rtb_adserver="ssh ops@dcartb-adserver1.alcfd.com"
+alias logs_dca="ssh ops@dca-logs.opscfd.com"
+alias logs_dcartb="ssh ops@dcartb-logs.opscfd.com"
+alias logs_lga2="ssh ops@lga2-logs.opscfd.com"
+alias logs_ewr="ssh ops@ewr-logs.opscfd.com"
+alias logs_lga2rtb="ssh ops@lga2rtb-logs.opscfd.com"
+alias logs_sfo="ssh ops@sfortb-logs.opscfd.com"
+alias logs_ams="ssh ops@amsrtb-logs.opscfd.com"
+alias logs_dev="ssh ops@devlogs.opscfd.com"
+alias pushit="ssh ops@lga2-pushit1.opscfd.com"
+alias pushit-dev="ssh ops@pushit.dev-opscfd.com"
+alias k="kill"
+alias top="htop"
+alias vlc="/Applications/VLC.app/Contents/MacOS/VLC"
+alias mpd_stream="/Applications/VLC.app/Contents/MacOS/VLC --intf=rc http://dpayne.dyndns-home.com:3030"
+
+alias c.="cd .."
+alias work="cd ~/Workspace"
+alias ps="ps -ax"
+
+alias g="git"
+alias m="/usr/local/bin/mvn"
+alias c="/usr/bin/clear"
+alias v="/usr/bin/vim"
+alias sv="/usr/bin/sudo -H vim"
+alias tf="/usr/bin/tail -f"
+alias gcn="git clone"
+alias gl="git smart-log"
+alias gm="git smart-merge"
+alias gup="git smart-pull"
+alias gdb="ggdb"
+alias tac="gtac"
+alias scala="scala-2.10"
+alias test2="ssh darby@lga2-adservertest2.alcfd.com"
+alias test1="ssh ops@lga2-adservertest1.alcfd.com"
+alias dev="ssh local.applovin.com"
+
+#
+# Will return the current branch name
+# Usage example: git pull origin $(current_branch)
+#
+function current_branch() {
+  ref=$(git symbolic-ref HEAD 2> /dev/null) || \
+  ref=$(git rev-parse --short HEAD 2> /dev/null) || return
+  echo ${ref#refs/heads/}
+}
+
+function current_repository() {
+  ref=$(git symbolic-ref HEAD 2> /dev/null) || \
+  ref=$(git rev-parse --short HEAD 2> /dev/null) || return
+  echo $(git remote -v | cut -d':' -f 2)
+}
+
+# these aliases take advantage of the previous function
+alias ggpull='git pull origin $(current_branch)'
+compdef ggpull=git
+alias ggpur='git pull --rebase origin $(current_branch)'
+compdef ggpur=git
+alias ggpush='git push origin $(current_branch)'
+compdef ggpush=git
+alias ggpnp='git pull origin $(current_branch) && git push origin $(current_branch)'
+compdef ggpnp=git
+alias g='git'
+compdef g=git
+alias gst='git status'
+compdef _git gst=git-status
+alias gd='git diff'
+compdef _git gd=git-diff
+alias gdc='git diff --cached'
+compdef _git gdc=git-diff
+alias gp='git push'
+compdef _git gp=git-push
+alias gd='git diff'
+gdv() { git diff -w "$@" | view - }
+compdef _git gdv=git-diff
+alias gc='git commit -v'
+compdef _git gc=git-commit
+alias gc!='git commit -v --amend'
+compdef _git gc!=git-commit
+alias gca='git commit -v -a'
+compdef _git gc=git-commit
+alias gca!='git commit -v -a --amend'
+compdef _git gca!=git-commit
+alias gcmsg='git commit -m'
+compdef _git gcmsg=git-commit
+alias gco='git checkout'
+compdef _git gco=git-checkout
+alias gcm='git checkout master'
+alias gr='git remote'
+compdef _git gr=git-remote
+alias grv='git remote -v'
+compdef _git grv=git-remote
+alias grmv='git remote rename'
+compdef _git grmv=git-remote
+alias grrm='git remote remove'
+compdef _git grrm=git-remote
+alias grset='git remote set-url'
+compdef _git grset=git-remote
+alias grup='git remote update'
+compdef _git grset=git-remote
+alias grbi='git rebase -i'
+compdef _git grbi=git-rebase
+alias grbc='git rebase --continue'
+compdef _git grbc=git-rebase
+alias grba='git rebase --abort'
+compdef _git grba=git-rebase
+alias gb='git branch'
+compdef _git gb=git-branch
+alias gba='git branch -a'
+compdef _git gba=git-branch
+alias gcount='git shortlog -sn'
+compdef gcount=git
+alias gcl='git config --list'
+alias gcp='git cherry-pick'
+compdef _git gcp=git-cherry-pick
+alias glg='git log --stat --max-count=10'
+compdef _git glg=git-log
+alias glgg='git log --graph --max-count=10'
+compdef _git glgg=git-log
+alias glgga='git log --graph --decorate --all'
+compdef _git glgga=git-log
+alias glo='git log --oneline --decorate --color'
+compdef _git glo=git-log
+alias glog='git log --oneline --decorate --color --graph'
+compdef _git glog=git-log
+alias gss='git status -s'
+compdef _git gss=git-status
+alias ga='git add'
+compdef _git ga=git-add
+alias grh='git reset HEAD'
+alias grhh='git reset HEAD --hard'
+alias gclean='git reset --hard && git clean -dfx'
+alias gwc='git whatchanged -p --abbrev-commit --pretty=medium'
+
+#remove the gf alias
+#alias gf='git ls-files | grep'
+
+alias gpoat='git push origin --all && git push origin --tags'
+alias gmt='git mergetool --no-prompt'
+
+alias gg='git gui citool'
+alias gga='git gui citool --amend'
+alias gk='gitk --all --branches'
+
+# Pretty log messages
+function _git_log_prettily(){
+  if ! [ -z $1 ]; then
+    git log --pretty=$1
+  fi
+}
+alias glp="_git_log_prettily"
+compdef _git glp=git-log
+
+#punish me!!!
+alias clear="echo 'N00B: use \"c\" instead'"
+alias vim="echo 'N00B: use \"v\" instead'"
+
+tail()
+{
+  if [ $# -gt 0 ] && [ "$1" = "-f" ] ; then
+     shift
+     echo 'N00B: use \"tf\" instead'
+  else
+     /usr/bin/tail "$@"
+  fi
+}
+
+sudo()
+{
+  if [ $# -gt 0 ] && [ "$1" = "vim" ] ; then
+     shift
+     echo 'N00B: use \"sv\" instead'
+  else
+     /usr/bin/sudo "$@"
+  fi
+}
+
+make()
+{
+  if [ $# -gt 0 ] && [ "$1" = "clean" ] ; then
+     shift
+     confirm && /usr/bin/make clean "$@"
+  else
+     /usr/bin/make "$@"
+  fi
+}
+
+function lt() { ls -ltrsa "$@" | tail; }
+function psgrep() { ps axuf | grep -v grep | grep "$@" -i --color=auto; }
+function fname() { find . -iname "*$@*"; }
+
+function removekey() { sed -i -e "$1d" /Users/$USER/.ssh/known_hosts }
+
+confirm () {
+    # call with a prompt string or use a default
+    read -q REPLY\?"Do you really want to run make clean? [Y/N]"
+    case $REPLY in
+        [yY][eE][sS]|[yY]) 
+            true
+            ;;
+        *)
+            false
+            ;;
+    esac
+}
+
+### Added by the Heroku Toolbelt
+echo "\n"
+fortune
