@@ -1,0 +1,26 @@
+#!/bin/bash
+#
+# tmonitor v 0.1
+#
+# pbrisbin 2009
+#
+###
+
+echo "  System Temps"
+sensors | grep C\  | while read line; do
+  name=$(echo $line | awk '{print $1}')
+  temp=$(echo $line | awk '{print $3}' | cut -c 2-)
+  echo "$name - $temp" | awk '{printf "    %-5.5s%3.3s  %-10.10s\n", $1, $2, $3, $4}'
+done
+
+echo "  Drive Temps"
+ls /dev | grep sd[a-z] | grep -v sd[a-z][0-9] | while read drive; do
+  sudo hddtemp "/dev/$drive" 2>/dev/null | grep -v MP620 | while read line; do
+    name=$(echo $line | awk '{print $3}' | cut -c -5)
+    temp=$(echo $line | awk '{print $4}')
+    echo "$name - $temp" | awk '{printf "    %-5.5s%3.3s  %-10.10s\n", $1, $2, $3, $4}'
+  done
+done
+
+exit 0
+###  Edited: 200904131501

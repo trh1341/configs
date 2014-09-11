@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# creates a temp symlink to a file outside mpd DB
+# adds it to the playlist and plays it
+#
+# i can't get mpd to follow symlinks, making this
+# script useless.  yes, i've added the option to
+# mpd.conf... yes, i've restarted mpd... yes, i've
+# recreated the db from scratch... maybe bug?
+#
+###
+
+[ -z $1 ] && exit 1
+
+mdir="$(awk -F '"' '/^music_directory/ {print $2}' /etc/mpd.conf)"
+
+rm -rf "$mdir/temp"
+mkdir -p "$mdir/temp"
+
+file="$(basename "$1")"
+dir="$(dirname "$1")"
+[ "$dir" = "." ] && dir="$PWD"
+
+ln -s "$dir/$file" "$mdir/temp/$file"
+mpc --no-status update "temp/$file"
+
+len="$(mpc playlist | wc -l)"
+
+mpc --no-status add "temp/$file"
+mpc --no-status play "$((len+1))"
+
+exit 0

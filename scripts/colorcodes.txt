@@ -1,0 +1,51 @@
+#!/bin/bash
+
+COLS=4
+PCODE=""
+
+i=1
+
+for B in 0 1; do
+  for FG in `seq 0 7`; do
+    CODE="\\e[${B};3${FG}m -- [${B};3${FG} -- "
+    if [ $(( i % COLS )) -ne 0 ]; then 
+      PCODE="$PCODE$CODE"
+    else
+      PCODE="$PCODE$CODE"
+      echo -e "$PCODE \e[0m"
+      PCODE="" 
+    fi
+    i=$(( i + 1 ))
+  done
+done
+echo
+
+[ "$1" != "-l" ] && exit 0
+
+PCODE=""
+
+i=1
+
+FG=0
+while [ $FG -le 255 ]; do
+  if [ $FG -le 9 ]; then
+    CODE="\\e[0;38;5;${FG}m -- [0;38;5;${FG}m   -- "
+  elif [ $FG -le 99 ]; then
+    CODE="\\e[0;38;5;${FG}m -- [0;38;5;${FG}m  -- "
+  else
+    CODE="\\e[0;38;5;${FG}m -- [0;38;5;${FG}m -- "
+  fi
+  
+  if [ $(( i % COLS )) -ne 0 ]; then 
+    PCODE="$PCODE$CODE"
+  else
+    PCODE="$PCODE$CODE"
+    echo -e "$PCODE \e[0m"
+    PCODE="" 
+  fi
+  
+  FG=$(( FG + 1 ))
+  i=$(( i + 1 ))
+done
+
+exit 0

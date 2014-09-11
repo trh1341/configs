@@ -277,7 +277,7 @@ myManageHook = composeAll . concat $
 
     -- Workspaces
     -- Be carefull with (!!) - if n is too big xmonad crashes!
-    , [ className =? "Firefox"          --> doF (liftM2 (.) W.view W.shift $ myWorkspaces !! 0) ]
+    , [ className =? "Chrome"          --> doF (liftM2 (.) W.view W.shift $ myWorkspaces !! 0) ]
     , [ className =? "Opera"            --> doF (liftM2 (.) W.view W.shift $ myWorkspaces !! 0) ]
     , [ className =? "Xchat"            --> doF (liftM2 (.) W.view W.shift $ myWorkspaces !! 1) ]
     , [ resource  =? "irssi"            --> doF (W.shift $ myWorkspaces !! 1) ]
@@ -329,14 +329,9 @@ myKeys conf = mkKeymap conf $
     , ("M-t", withFocused $ windows . W.sink) -- Push window back into tiling
     , ("M-S-t", sinkAll) -- Push all floating windows back into tiling
 
---    , ("M-S-r", spawn "killall conky" >> restart "xmonad" True) -- Restart xmonad, quit conky first
     , ("M-S-r", spawn "killall conky" >> restart "xmonad" True) -- Restart xmonad, quit conky first
 
     , ("M-C-<Backspace>", io $ exitWith ExitSuccess) -- quit xmonad
-
-    -- , ((modMask              , xK_b     ), bosskey xK_b) -- bosskey: hide everything!
-
-    -- , ((modMask .|. controlMask, xK_h   ), windows (bla 0 (workspaces conf !! 5)))
     ]
     ++
 
@@ -347,34 +342,21 @@ myKeys conf = mkKeymap conf $
     , ("M-d", spawn "exe=`dmenu_path | dmenu` && eval \"exec $exe\"") -- launch dmenu
     , ("<Print>", spawn "scrot")
     , ("M-z", spawn "zim")
---    , ("M-<F2>", spawn "exe=`dmenu_path | dmenu -b` && eval \"exec $exe\"") -- launch dmenu
     , ("M-<F2>", spawn "exe=`dmenu_run -b` && eval \"exec $exe\"") -- launch dmenu
     , ("M-<F3>", spawn "pcmanfm")
     , ("M-f", spawn "pcmanfm")
-    , ("M-<F4>", runOrRaise "google-chromium-beta" (className =? "Google-Chromium-Beta"))
+    , ("M-<F4>", runOrRaise "google-chrome-beta" (className =? "Chrome"))
     , ("M-<F5>", runOrRaise "hipchat"  (className =? "Hipchat"))
     , ("M-<F6>", myRunOrRaise (myTerminal ++ " -name irssi -e zsh -c \"irssi\"") (resource =? "irssi"))
     , ("M-<F7>", myRunOrRaise (myTerminal ++ " -name rtorrent -e zsh -c \"screen -x || screen rtorrent\"") (resource =? "rtorrent"))
     , ("M-<F8>", myRunOrRaise ("export MPD_HOST=" ++ mpd_host ++ " && " ++ myTerminal ++ " -name ncmpcpp -e ncmpcpp") (resource =? "ncmpcpp"))
     , ("M-S-<F7>", myRunOrRaise (myTerminal ++ " -name abook -e abook ") (resource =? "abook"))
     , ("M-S-<F8>", runOrRaise "sonata" (className =? "sonata"))
-
-    -- , ((modMask .|. shiftMask, xK_F7     ), runOrRaise "thunderbird3" (className =? "Thunderbird"))
-    --, ((modMask              , xK_F4     ), runOrRaise "firefox" (className =? "Firefox"))
-    --, ((modMask              , xK_F5     ), runOrRaise "xchat" (className =? "Xchat"))
     ]
     ++
 
     -- Multimedia keys
     -- Set according xmodmap!
-    --[ (("M-S-<minus>"),        spawn "amixer set Master toggle")
-    --, (("M-<equal>"), spawn "amixer set Master 1+")
-    --, (("M-<minus>"), spawn "amixer set Master 1-")
-    --]
-    -- ++
---    [ ("<XF86AudioMute>",        spawn "/home/nils/.myscripts/ossvol -t")
---    , ("<XF86AudioRaiseVolume>", spawn "/home/nils/.myscripts/ossvol -i 1")
---    , ("<XF86AudioLowerVolume>", spawn "/home/nils/.myscripts/ossvol -d 1")
     [ ("M-p",        spawn $ "export MPD_HOST=" ++ mpd_host ++ " && mpc toggle")
     , ("M-i",        spawn $ "export MPD_HOST=" ++ mpd_host ++ " && mpc prev")
     , ("M-o",        spawn $ "export MPD_HOST=" ++ mpd_host ++ " && mpc next")

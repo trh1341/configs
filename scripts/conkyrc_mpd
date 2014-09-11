@@ -1,0 +1,29 @@
+use_xft yes
+xftfont cure:size=8
+update_interval 1
+own_window_colour black
+own_window_hints undecorated,below,sticky,skip_taskbar,skip_pager
+own_window_transparent yes
+own_window_type desktop
+own_window yes
+double_buffer yes
+maximum_width 200
+draw_shades no
+draw_outline no
+draw_borders no
+stippled_borders 0
+border_margin 5
+border_width 1
+default_color ffffff
+alignment bottom_right
+gap_x 4
+gap_y 22
+no_buffers yes
+uppercase no
+override_utf8_locale yes
+use_spacer yes
+
+TEXT
+${mpd_smart}
+${mpd_status}${alignr}${mpd_elapsed}/${mpd_length}
+${color 42c4d3}${mpd_bar 5 1}

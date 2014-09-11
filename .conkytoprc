@@ -9,4 +9,4 @@ mpd_port 6600
 use_spacer none
 
 TEXT
-RAM: $mem / $memmax  ::  ROOT: ${fs_free /} free  ::  HOME: ${fs_free /home} free  ::  CPU: $cpu%  ::  CPU freq: $freq_g  ::  ${time %A}, ${time %e %B}   ${time %l:%M %p}  ::  Weather: ${execi 1800 weatherget -f ~/scripts/.conkyweatherrc --station-id=USPA0458 --standard }  ::  Mpd:  ${mpd_title 35}  -  ${mpd_artist} 
+RAM: $mem / $memmax  ::  ROOT: ${fs_free /} free  ::  HOME: ${fs_free /home} free  ::  CPU: $cpu%  ::  CPU freq: $freq_g  ::  ${time %A}, ${time %e %B}  ${time %l:%M %p}  ::  Email: ${execi 300 python ~/scripts/gmail.py}  ::  Weather: ${execi 1800 weatherget -f ~/scripts/.conkyweatherrc --station-id=USPA0458 --standard }  ::  Mpd:  ${mpd_title 35}  -  ${mpd_artist} 
