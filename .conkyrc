@@ -1,0 +1,31 @@
+background no
+extra_newline no
+out_to_console yes
+update_interval 1.0
+double_buffer yes
+total_run_times 0
+use_xft yes
+xftfont Bitstream Vera Sans Mono:size=7
+use_spacer none
+mpd_host 127.0.0.1
+mpd_port 6600
+
+color0 0e1a20
+color1 1e6fa0
+color2 5a8ea0
+color3 3182a6
+color4 6590a0
+color5 1c8ed3
+color6 2ba4c9
+color7 5a9dbb
+color8 3795c0
+color9 97b8c8
+color10 61b8db
+color11 84bfdb
+color12 aac2d5
+color13 e0d1c1
+color14 b3d5e0
+color15 d3dce0
+
+TEXT
+^bg(\#0e1a20)^fg(\#3182a6)RAM: ^fg(\#84bfdb)${mem} ^fg(\#3182a6)/ ^fg(\#84bfdb)${memmax} ^fg(\#1e6fa0) ::  ^fg(\#3182a6)ROOT: ^fg(\#84bfdb)${fs_free /} ^fg(\#3182a6)free  ^fg(\#1e6fa0)::  ^fg(\#3182a6)HOME: ^fg(\#84bfdb)${fs_free /home} ^fg(\#3182a6)free  ^fg(\#1e6fa0)::  ^fg(\#3182a6)CPU: ^fg(\#84bfdb)${cpu}%  ^fg(\#1e6fa0)::  ^fg(\#3182a6)CPU freq: ^fg(\#84bfdb)${freq_g}  ^fg(\#1e6fa0)::  ^fg(\#3182a6)${time %A}, ${time %e %B}  ^fg(\#84bfdb)${time %l:%M %p}  ^fg(\#1e6fa0)::  ^fg(\#3182a6)Weather: ^fg(\#84bfdb)${execi 1800 weatherget -f ~/scripts/.conkyweatherrc --station-id=USPA0458 --standard }  ^fg(\#1e6fa0)::  ^fg(\#3182a6)Email: ^fg(\#84bfdb)${execi 300 python ~/scripts/gmail.py}  ^fg(\#1e6fa0)::  ^fg(\#3182a6)Mpd:  ^fg(\#84bfdb)${mpd_title 35}  ^fg(\#3182a6)-  ^fg(\#84bfdb)${mpd_artist} 

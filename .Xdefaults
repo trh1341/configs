@@ -28,39 +28,42 @@ URxvt.xftAntialias:     true
 URxvt.depth:            24
 URxvt.transparent:      true
 URxvt.inheritPixmap:    true
-URxvt.shading:          40
+URxvt.shading:          20
 URxvt.fadeColor:        black
 URxvt.tintColor:        white
 URxvt.dynamicColors:    off
 
-URxvt.background:      white
+URxvt.background:      black
 URxvt.foreground:      white
 
-URxvt.visualBell:       true
+URxvt.visualBell:       false
 URxvt.urgentOnBell:     false
 URxvt.cutchars:         "()*,<>[]{}|'
 
 URxvt.perl-lib:           /usr/lib/urxvt/perl/
 URxvt.perl-ext-common:    default,matcher
+URxvt.perl-ext-common: default,tabbed
 URxvt.urlLauncher:        /usr/bin/google-chrome-beta
 URxvt.matcher.button:     1
 URxvt.matcher.pattern.1:  \\bwww\\.[\\w-]+\\.[\\w./?&@#-]*[\\w/-]
- }}}
+! }}}
 
 ! {{{ Fonts
-URxvt.font: xft:Terminus:pixelsize=14:antialias=false
-URxvt.font: -*-terminus-*-r-*-*-12-*-*-*-*-*-iso10646-*
-URxvt.boldFont: xft:Terminus:bold:pixelsize=14:antialias=false
+!URxvt.font: xft:Terminus:pixelsize=12:antialias=false
+!URxvt.boldFont: xft:Terminus:bold:pixelsize=12:antialias=false
 
 !URxvt.font:            xft:Monaco:pixelsize=11:antialias=true:hinting=true
 !URxvt.boldFont:        xft:Monaco:pixelsize=11:antialias=true:bold:hinting=true
 !URxvt.italicFont:      xft:Monaco:pixelsize=11:antialias=true:italic:autohint=true:hinting=true
 !URxvt.bolditalicFont:  xft:Monaco:pixelsize=11:antialias=true:bold:italic:autohint=true:hinting=true
 
-!URxvt*font:            -xos4-terminus-medium-r-normal--12-*-*-*-*-*-*-u
-!URxvt*boldFont:        -xos4-terminus-bold-r-normal--12-*-*-*-*-*-*-u
-!URxvt*italicFont:      -xos4-terminus-medium-r-normal--12-*-*-*-*-*-*-u
-!URxvt*boldItalicFont:  -xos4-terminus-medium-r-normal--12-*-*-*-*-*-*-u
+URxvt*font:            -xos4-terminus-medium-r-normal--12-*-*-*-*-*-*-u
+URxvt*boldFont:        -xos4-terminus-bold-r-normal--12-*-*-*-*-*-*-u
+URxvt*italicFont:      -xos4-terminus-medium-r-normal--12-*-*-*-*-*-*-u
+URxvt*boldItalicFont:  -xos4-terminus-medium-r-normal--12-*-*-*-*-*-*-u
+
+!URxvt.font: xft:Source Code Pro Medium:pixelsize=10:antialais=true:hinting=true
+!URxvt.font: xft:Source Code Pro Bold:pixelsize=10:antialais=true:hinting=true
 
 !URxvt.font:             -*-terminus-medium-r-*-*-12-120-*-*-*-*-*-*
 !URxvt.boldFont:         -*-terminus-medium-r-*-*-12-120-*-*-*-*-*-*
@@ -150,6 +153,31 @@ URxvt*color15: #D9D9D9
 !*color15:    rgb:ff/ff/ff
 ! }}}
 
+!   *color16: #0e1a20
+!   *color17: #1e6fa0
+!   *color18: #5a8ea0
+!   *color19: #3182a6
+!   *color20: #6590a0
+!   *color21: #1c8ed3
+!   *color22: #2ba4c9
+!   *color23: #5a9dbb
+!   *color24: #3795c0
+!   *color25: #97b8c8
+!   *color26: #61b8db
+!   *color27: #84bfdb
+!   *color28: #aac2d5
+!   *color29: #e0d1c1
+!   *color30: #b3d5e0
+!   *color31: #d3dce0
+!#include "/home/dpayne/.Xres"
+
+! }}}
+
+! {{{ tabbar colors
+URxvt.tabbed.tabbar-fg: 12
+URxvt.tabbed.tabbar-bg: 16
+URxvt.tabbed.tab-fg: 12
+URxvt.tabbed.tab-bg: 16
 ! }}}
 
 ! {{{ xpdf
