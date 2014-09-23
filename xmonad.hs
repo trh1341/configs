@@ -210,10 +210,10 @@ myBorderWidth           = 2
 -- {{{ Log hook
 
 -- Statusbar with workspaces, layout and title
-myStatusBar = "dzen2 -p -xs 1 -ta l -fg '" ++ color3 ++ 
-              "' -bg '" ++ color0 ++ "' -fn '" ++ myFont ++ "' -w 1920"
+myStatusBar = "dzen2 -p -xs 2 -ta l -fg '" ++ color3 ++ 
+              "' -bg '" ++ color0 ++ "' -fn '" ++ myFont ++ "' -w 2560"
 
-myConkyBar  = "conky -c ~/.conkyrc | dzen2 -p 100 -xs 2 -ta l -bg '" ++ color0 ++ "' -fn '" ++ myFont ++ "' -w 2560"
+myConkyBar  = "conky -c ~/.conkyrc | dzen2 -p 100 -xs 1 -ta l -bg '" ++ color0 ++ "' -fn '" ++ myFont ++ "' -w 1920"
 
 -- Colors, font and iconpath definitions:
 myFont = "-xos4-terminus-medium-r-normal--12-*-*-*-*-*-*-u"
@@ -340,10 +340,10 @@ myKeys conf = mkKeymap conf $
     , ("M-f", spawn "pcmanfm")
     , ("M-<F4>", runOrRaise "google-chrome-beta" (className =? "Chrome"))
     , ("M-<F5>", runOrRaise "hipchat"  (className =? "Hipchat"))
-    , ("M-<F6>", myRunOrRaise (myTerminal ++ " -name irssi -e zsh -c \"irssi\"") (resource =? "irssi"))
-    , ("M-<F7>", myRunOrRaise (myTerminal ++ " -name rtorrent -e zsh -c \"screen -x || screen rtorrent\"") (resource =? "rtorrent"))
-    , ("M-<F8>", myRunOrRaise ("export MPD_HOST=" ++ mpd_host ++ " && " ++ myTerminal ++ " -name ncmpcpp -e ncmpcpp") (resource =? "ncmpcpp"))
-    , ("M-S-<F7>", myRunOrRaise (myTerminal ++ " -name abook -e abook ") (resource =? "abook"))
+    , ("M-<F6>", myRunOrRaise (myTerminal ++ " -e zsh -c \"irssi\"") (resource =? "irssi"))
+    , ("M-<F7>", myRunOrRaise (myTerminal ++ " -e zsh -c \"screen -x || screen rtorrent\"") (resource =? "rtorrent"))
+    , ("M-<F8>", myRunOrRaise ("export MPD_HOST=" ++ mpd_host ++ " && " ++ myTerminal ++ " -e ncmpcpp") (resource =? "ncmpcpp"))
+    , ("M-S-<F7>", myRunOrRaise (myTerminal ++ " -e abook ") (resource =? "abook"))
     , ("M-S-<F8>", runOrRaise "sonata" (className =? "sonata"))
     ]
     ++
