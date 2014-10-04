@@ -1,0 +1,158 @@
+set $mod Mod4
+
+font xft:Terminus 9.5
+new_window pixel 2
+focus_follows_mouse  yes
+
+set $gray1 #568aa0
+set $gray2 #0d1a20
+set $gray3 #cad2d7
+set $browser google-chrome-beta
+
+client.focused            $gray1   $gray1   $gray3   $gray3
+client.focused_inactive   $gray2   $gray2   $gray3   $gray1
+client.unfocused          $gray2   $gray2   $gray3   $gray1
+
+# use Mouse+$mod to drag floating windows to their wanted position
+floating_modifier $mod
+
+# start a terminal
+bindsym $mod+Return exec urxvt
+bindsym Print exec scrot -q 100 -e 'mv $f ~/Pictures'
+
+# sound shortcuts
+bindsym XF86AudioPlay exec ~/scripts/audiocontrols.sh play
+bindsym XF86AudioStop exec ~/scripts/audiocontrols.sh stop 
+bindsym XF86AudioNext exec ~/scripts/audiocontrols.sh next
+bindsym XF86AudioPrev exec ~/scripts/audiocontrols.sh stop
+bindsym XF86Tools exec urxvt -x sh -c "ncmpcpp"
+bindsym XF86AudioRaiseVolume exec amixer set Master 3+ unmute
+bindsym XF86AudioLowerVolume exec amixer set Master 3- unmute
+bindsym XF86AudioMute exec amixer set Master mute
+
+# lock screen using cinnamon's screen lock
+bindsym XF86Calculator exec cinnamon-screensaver-command -l
+
+# start browser
+bindsym $mod+c exec $browser
+bindsym XF86HomePage exec $browser
+
+# kill focused window
+bindsym $mod+Shift+Q kill
+
+# start dmenu (a program launcher)
+bindsym $mod+d exec dmenu_run -nb '#0d1a20' -nf '#75bad8'
+
+# screen lock
+bindsym Control+$mod+l exec ~/scripts/lock.sh
+exec xautolock -time 15 -locker '~/scripts/lock.sh' &
+
+# change focus
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+
+# move focused window
+bindsym $mod+Shift+H move left
+bindsym $mod+Shift+J move down
+bindsym $mod+Shift+K move up
+bindsym $mod+Shift+L move right
+
+# alternatively, you can use the cursor keys:
+bindsym $mod+Shift+Left move left
+bindsym $mod+Shift+Down move down
+bindsym $mod+Shift+Up move up
+bindsym $mod+Shift+Right move right
+
+# split in horizontal orientation
+bindsym $mod+b split h
+
+# split in vertical orientation
+bindsym $mod+v split v
+
+# enter fullscreen mode for the focused container
+bindsym $mod+f fullscreen
+
+# change container layout (tabbed, toggle split)
+bindsym $mod+n layout tabbed
+bindsym $mod+m layout toggle split
+
+# toggle tiling / floating
+bindsym $mod+Shift+f floating toggle
+
+# change focus between tiling / floating windows
+
+# switch to workspace
+bindsym $mod+1 workspace 1: Home
+bindsym $mod+2 workspace 2
+bindsym $mod+3 workspace 3
+bindsym $mod+4 workspace 4
+bindsym $mod+5 workspace 5
+bindsym $mod+6 workspace 6
+bindsym $mod+7 workspace 7
+bindsym $mod+8 workspace 8: ssh
+bindsym $mod+9 workspace 9: ncmpcpp
+bindsym $mod+0 workspace 10: irssi
+
+# move focused container to workspace
+bindsym $mod+Shift+exclam move container to workspace 1: Home
+bindsym $mod+Shift+quotedbl move container to workspace 2
+bindsym $mod+Shift+sterling move container to workspace 3
+bindsym $mod+Shift+dollar move container to workspace 4
+bindsym $mod+Shift+percent move container to workspace 5
+bindsym $mod+Shift+asciicircum move container to workspace 6
+bindsym $mod+Shift+ampersand move container to workspace 7
+bindsym $mod+Shift+asterisk move container to workspace 8: ssh
+bindsym $mod+Shift+parenleft move container to workspace 9: ncmpcpp
+bindsym $mod+Shift+parenright move container to workspace 10: irssi
+bindsym $mod+Shift+underscore move container to workspace 11: Daemons
+
+# reload the configuration file
+bindsym $mod+Shift+C reload
+# restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
+bindsym $mod+Shift+R restart
+# exit i3 (logs you out of your X session)
+bindsym $mod+Shift+E exit
+
+# resize window (you can also use the mouse for that)
+mode "resize" {
+        # These bindings trigger as soon as you enter the resize mode
+
+        # Pressing left will shrink the window’s width.
+        # Pressing right will grow the window’s width.
+        # Pressing up will shrink the window’s height.
+        # Pressing down will grow the window’s height.
+        bindsym l resize grow width 10 px or 10 ppt
+        bindsym j resize grow height 10 px or 10 ppt
+        bindsym k resize shrink height 10 px or 10 ppt
+        bindsym h resize shrink width 10 px or 10 ppt
+
+        # same bindings, but for the arrow keys
+        bindsym 113 resize shrink width 10 px or 10 ppt
+        bindsym 116 resize grow height 10 px or 10 ppt
+        bindsym 111 resize shrink height 10 px or 10 ppt
+        bindsym 114 resize grow width 10 px or 10 ppt
+
+        # back to normal: Enter or Escape
+        bindsym Return mode "default"
+        bindsym Escape mode "default"
+}
+
+bindsym $mod+r mode "resize"
+
+bar {
+        position top
+        status_command ~/.i3/conky
+        colors {
+                statusline #2aa5c9
+                background #0d1a20
+                separator #568aa0
+                focused_workspace #0d1a20 #0d1a20 #2aa5c9
+                urgent_workspace   #ffffff #900000
+        }
+}
+
+#exec /usr/lib/gnome-settings-daemon/gnome-settings-daemon
+exec --no-startup-id /bin/sh ~/.fehbg
+exec gnome-keyring-daemon
