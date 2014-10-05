@@ -45,37 +45,13 @@ export PATH=/opt/local/bin:/bin:/usr/bin:/usr/local/bin:/Users/dpayne2/bin:/usr/
 export PATH=/Library/PostgreSQL/bin:$PATH
 
 alias untar='tar -xvf'
-alias dvl='ssh -X lxdm603m7'
-alias ftp_dvl='sftp lxdm603m7'
-alias startjdev="/users/dpayne2/oracle/middleware/jdeveloper/jdev/bin/jdev"
-alias grey="ssh -X -p 2222 dpayne@grey.dyndns.tv"
 
-export MPD_HOST="http://www.mympd.in"
+export MPD_HOST="localhost"
 export MPD_PORT="6600"
 export SVN_EDITOR="vim"
 
-#Java setup
-export JAVA_HOME=/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home
-export PATH=$JAVA_HOME/bin:$PATH
-export MEM_MAX_PERM_SIZE="-XX:MaxPermSize=2048m"
-export USER_MEM_ARGS="${MEM_ARGS} ${MEM_MAX_PERM_SIZE} -verbose:gc -XX:+PrintGCTimeStamps -XX:+PrintGCDetails -Xloggc"
-
-#maven
-export M2_HOME=/maven3
-#export M2_HOME=/Users/dpayne2/Workspace/neo/maven/3.0.3
-export MAVEN_OPTS="-Xmx512m -XX:PermSize=2048m -XX:MaxPermSize=2048m"
-#export MAVEN_OPTS="-Xmx512m -XX:PermSize=64m -XX:MaxPermSize=64m"
-export PATH=$M2_HOME/bin:$PATH
-
-#ruby on rails setup
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" 
-
-export SDK_ROOT="/Users/dpayne2/Library/android/tools/"
-
 export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 export PATH=/usr/local/bin:$PATH
-export MANPATH=/opt/local/share/man:$MANPATH
-export DISPLAY=:0.0
 alias c="cd"
 alias c.="cd .."
 alias v="vim"
