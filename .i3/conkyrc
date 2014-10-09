@@ -13,15 +13,15 @@ override_utf8_locale yes
 TEXT
 ,[
   {"full_text": "  ♬   ${mpd_title 35}  -  ${mpd_artist}  ", "color":"\#3182a6"},
-  {"full_text": "  Vol  ${exec amixer sget 'Master' | grep 'Mono:' | cut -c22-24 | sed '/^$/d'} %  ", "color":"\#3182a6"},
+  {"full_text": "  Vol  ${exec pulseaudio-ctl | grep 'Volume' | cut -c39-41 | sed '/^$/d'} %  ", "color":"\#3182a6"},
   {"full_text": "  ▲  ${upspeed wlan0}  ", "color":"\#3182a6"},
   {"full_text": "  ▼  ${downspeed wlan0}  ", "color":"\#3182a6"},
   {"full_text": "  ⛁  ${fs_free /}  ","color":"\#3182a6"},
   {"full_text": "  MEM  $membar  ", "color":"\#3182a6"},
   {"Full_text": "  CPU  $cpubar  ", "color":"\#3182a6"},
   {"full_text": "  GPU  ${exec nvidia-settings -q gpucoretemp -t | head -1} °C  ","color":"\#3182a6"},
-  {"full_text": "  ☁  ${exec weatherget -f ~/scripts/.conkyweatherrc --station-id=USCA0830 --standard}  ","color":"\#3182a6"},
+  {"full_text": "  ☁  ${exec pythpn2 ~/scripts/weatherget -f ~/scripts/.conkyweatherrc --station-id=USCA0830 --standard}  ","color":"\#3182a6"},
   {"full_text": "  ✉  ${exec python ~/scripts/gmail.py}  ","color":"\#3182a6"},
   {"full_text": "  ↑  ${uptime}  ","color": "\#3182a6"},
-  {"full_text": "  ${time %a %d %b} ${time %H:%M:%S %p}  ","color": "\#3182a6"}
+  {"full_text": "  ${time %a %d %b} ${time %I:%M:%S %p}  ","color": "\#3182a6"}
 ]

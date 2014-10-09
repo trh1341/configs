@@ -1,0 +1,750 @@
+#!/usr/bin/python
+#
+#   weatherget
+#
+#   Copyright (C) 2006 - 2007 by Tyler Gates <TGates81@gmail.com>
+#  
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+# 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#  
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, 
+#   USA.
+#
+
+
+import os, sys, urllib, re, time, getopt, signal, thread
+# rename time to Time so it won't conflict with our string variable. I would rather do this than rename the string because it
+# could be part of the config
+Time = time
+del(time)
+
+# globals
+
+# this one will be filled in later according to os.name()
+config_file = ''
+
+url_fetched	= 0
+trying_url	= 0
+url_exception	= 0
+url_wait	= 20.0
+
+def handler(signo, frame):
+	if signo == 2:
+		if trying_url and not url_fetched:
+			try:
+				thread.exit()
+			except:
+				sys.exit(130)
+		else:
+			sys.exit(130)
+
+signal.signal(signal.SIGINT, handler)
+
+myname		= os.path.basename(sys.argv[0])
+myver		= '0.4.0.1'
+
+def usage():
+	print ''
+	print 'usage: %s [station identification] [units]'%myname
+	print ''
+	print 'options:'
+	print '  -h, --help                             show this help message and exit'
+	print '  -v, --version                          display version and exit'
+	print '  -s ID, --station-id=ID                 station id (U.S. users can use zip)'
+	print '  -l CITY, --lookup=CITY                 lookup station id for CITY'
+	print '  -c CITY, --station-city=CITY           lookup and use station id for CITY'
+	print '  -S, --standard                         use standard units'
+	print '  -m, --metric                           use metric units'
+	print '  -e NUMDAYS, --extended-day=NUMDAYS     provide and extended day forecast as'
+	print '                                         specified in NUMDAYS'
+	print '  -f FILE, --config=FILE                 use FILE as configuration file'
+	print '  -k, --term-keys                        list all available term_code() keys'
+	print ''
+
+try:
+	opts, args = getopt.getopt(sys.argv[1:], 'hvs:l:c:Sme:f:k', ['help', 'version', 'station-id=', 'lookup=', 'city=', 'standard', 'metric', 'extended-day=', 'config=', 'term-keys'])
+except getopt.GetoptError, e:
+	usage()
+	print 'Error: ' + str(e)
+	sys.exit(1)
+
+
+# for options
+VERSION		= 0
+STATION_ID	= 0
+LOOKUP		= 0
+CITY		= 0
+STANDARD	= 0
+METRIC		= 0
+EXTENDED_DAY	= 0
+ALT_CONFIG	= 0
+TERM_KEYS	= 0
+ID		= ''
+LOOKUP_CITY	= ''
+STATION_ID	= ''
+NUMDAYS		= ''
+# UNITS to nothing, it is determined by STANDARD and METRIC values
+UNITS		= ''
+
+for opt, optarg in opts:
+	if opt in ['-h', '--help']: usage(); sys.exit(0)
+	if opt in ['-v', '--version']: VERSION = 1
+	if opt in ['-s', '--station-id']: STATION_ID = 1; ID = optarg
+	if opt in ['-l', '--lookup']: LOOKUP = 1; LOOKUP_CITY = optarg
+	if opt in ['-c', '--city']: CITY = 1; STATION_CITY = optarg
+	if opt in ['-S', '--standard']: STANDARD = 1
+	if opt in ['-m', '--metric']: METRIC = 1
+	if opt in ['-e', '--extended-day']: EXTENDED_DAY = 1; NUMDAYS = optarg
+	if opt in ['-f', '--config']: ALT_CONFIG = 1; config_file = optarg
+	if opt in ['-k', '--term-keys']: TERM_KEYS = 1
+
+if VERSION:
+	print 'version ' + myver
+	sys.exit(0)
+
+# must have an opt or must be using --term-keys
+if len(opts) == 0 and not TERM_KEYS:
+	usage()
+	sys.exit(1)
+
+# --station-id can't be used with --city
+if STATION_ID and CITY:
+	print '--station-id cannot be used with --city'
+	sys.exit(1)
+
+# --standard and metric must be used with --station-id or --city
+if STANDARD or METRIC:
+	if not STATION_ID and not CITY:
+		print 'requires --station-id or --city'
+		sys.exit(1)
+if STATION_ID or CITY:
+	if not STANDARD and not METRIC:
+		print 'requires --standard or --metric'
+		sys.exit(1)
+
+# don't use --standard and --metric together
+if STANDARD and METRIC:
+	print '--standard and --metric cannot be used together, specify only one'
+	sys.exit(1)
+
+
+# --extended day must be used with --station-id or --city
+if EXTENDED_DAY:
+	if not STATION_ID and not CITY:
+		print 'requires --station-id or --city'
+		sys.exit(1)
+
+# --extended day NUMDAYS value cannot be more than 10
+if EXTENDED_DAY:
+	try:
+		int_numdays = int(NUMDAYS)
+	except:
+		print >>sys.stderr.write('Error: NUMDAYS must be an integer!')
+		sys.exit(1)
+	if int_numdays <= 0:
+		print >>sys.stderr.write('Error: NUMDAYS must be greater than or equal to 1.')
+		sys.exit(1)
+	if int_numdays > 10:
+		print 'NUMDAYS cannot exceed 10 days'
+		sys.exit(1)
+	# convert back to string to drop any (+) signs
+	NUMDAYS = str(int_numdays)
+
+if STANDARD: UNITS = 's'
+elif METRIC: UNITS = 'm'
+
+class try_url:
+	""" class to fetch a url in an allocated time or exit. """
+
+	def __init__ (self):
+		self.url_string = ''
+
+	def fetch (self, url):
+		global trying_url, url_fetched, url_exception
+		trying_url = 1
+		url_fetched = 0
+		url_exception = 0
+		try:
+			f = urllib.urlopen(url)
+		except Exception, e:
+			print >>sys.stderr.write(str(e))
+			url_exception = 1
+			sys.exit(1)
+		self.url_string = f.readlines()
+		f.close()
+		url_fetched = 1
+		trying_url = 0
+
+	def time_fetch (self, url, wait_time):
+		# this will thread self.fetching and kill this process if not found in url_wait time
+		#start_time = int(Time.strftime('%S'))
+		start_time = Time.clock()
+		thread.start_new(self.fetch, (url,))
+
+		while Time.clock() - start_time <= wait_time :
+			if url_exception:
+				thread.exit()
+				sys.exit(1)
+			elif url_fetched:
+				return self.url_string
+
+		# if we've gotten this far it was not fetched in time, so we MUST kill
+		print >>sys.stderr.write('Error: fetching `'+url+'\' timed out.')
+		try:
+			thread.exit()
+		except:
+			sys.exit(1)
+
+def id_lookup(city):
+	lookup_url = 'http://xoap.weather.com/search/search?where='+city
+	lines = try_url().time_fetch(lookup_url, url_wait)
+	station_id = []
+	_city = []
+	for line in lines:
+		if 'Server Error' in line:
+			print 'Warning: Internal Server Error detected on host machine. Try again later.'
+		if 'loc id=' in line:
+			station_can = line.split('loc id=')[1]
+			station_can = station_can.split('"')[1]
+			city_can = re.split('[<>]', line)[2]
+			# weather.com's search engine doesn't provide extact matches so check that
+			# now and return the matches immediately
+			if city_can.lower() == city.lower():
+				station_id = []
+				_city = []
+				_city.append(city_can)
+				station_id.append(station_can)
+				return _city, station_id
+			else:
+				station_id.append(station_can)
+				_city.append(city_can)
+	return _city, station_id
+
+if CITY: 
+	IDs = id_lookup(STATION_CITY)[1]
+	if len(IDs) > 1:
+		print 'Too many matching search results for `'+STATION_CITY+'\'. Please be more specific.'
+		sys.exit(1)
+	elif len(IDs) == 0:
+		print 'No matching search results for `'+STATION_CITY+'\'. Cannot proceed.'
+		sys.exit(1)
+	
+	else: ID = IDs[0]
+
+if EXTENDED_DAY: forecast_url = 'http://xoap.weather.com/weather/local/'+ID+'?cc=*&unit='+UNITS+'&dayf='+NUMDAYS
+else: forecast_url = 'http://xoap.weather.com/weather/local/'+ID+'?cc=*&unit='+UNITS
+
+forecast_list	= []
+
+def tag_contents(tag, lines):
+	""" get the contents or values or the tags by giving a list and returning a string """
+
+	start_tag	= '<'+tag+'>'
+	# end tag can only be one word long
+	end_tag		= '</'+tag.split(' ')[0]+'>'
+	tag_contents	= []
+	for num in range(len(lines)):
+		if re.search(start_tag, lines[num]):
+			tmp_contents = ''
+			below = lines[num:]
+			# get rid of the start tag
+			below[0] = re.sub('.*'+start_tag, '', below[0])
+			for i in below:
+				if not end_tag in i:
+					tmp_contents = tmp_contents + i
+				else:
+					tmp_contents = tmp_contents + re.sub(end_tag+'.*', '', i)
+					# add it to the list
+					tag_contents.append(tmp_contents)
+					break
+	return tag_contents
+
+def reg_tag(keyword, lines):
+	""" search for keyword in lines and return all matches minus the tag symbols """
+	
+	a_tag = '<.*>'
+	matches = []
+	for num in range(len(lines)):
+		# examine all tags
+		if re.search(a_tag, lines[num]):
+			# put them into a list
+			candidates = lines[num]
+			candidates = re.split('[<>]', candidates)
+			# iterate and find the right one
+			for candidate in candidates:
+				if re.search(keyword, candidate):
+					matches.append(candidate)
+	return matches
+
+def list_at(string, point):
+	""" convert string to list at point being the split point """
+
+	temp_string = ''
+	new_list = []
+	for each in string:
+		temp_string = temp_string + each
+		if point in each:
+			new_list.append(temp_string)
+			temp_string = ''
+	return new_list
+
+
+def sane_location(report):
+	""" verify the location given is valid. Return True or False. """
+
+	wrong_location_string = 'Invalid location provided'
+	for r in report:
+		if wrong_location_string in r:
+			return 0
+	return 1	
+
+def retrieve_weather():
+	""" retrieve weather report once and store in a global variable so we don't have to query the server for data each time we need it """
+
+	global forecast_list
+	if forecast_list == []:
+		lines = try_url().time_fetch(forecast_url, url_wait)
+		forecast_list = lines
+		if not sane_location(forecast_list):
+			print 'Invalid location provided. Try --lookup=CITY.'
+			sys.exit(1)
+	return forecast_list
+
+class forecast:
+	def __init__(self):
+		self.forecast = retrieve_weather()
+
+# these classes will get tag contents of the given class name. Methods within are sub tags. Some tags are nested within others therefore
+# some classes will require the data of others.
+
+class head(forecast):
+	def __init__(self):
+		self.head = tag_contents('head', forecast().forecast)[0]
+		self.head = list_at(self.head, '\n')
+	def ut(self):
+		return tag_contents('ut', self.head)
+	def ud(self):
+		return tag_contents('ud', self.head)
+	def us(self):
+		return tag_contents('us', self.head)
+	def up(self):
+		return tag_contents('up', self.head)
+	def ur(self):
+		return tag_contents('ur',self.head)
+
+class loc_id(forecast):
+	def __init__(self):
+		self.loc_id = tag_contents('loc id=\"'+ID+'\"', forecast().forecast)[0]
+		self.loc_id = list_at(self.loc_id, '\n')
+	def dnam(self):
+		return tag_contents('dnam', self.loc_id)
+	def lat(self):
+		return tag_contents('lat', self.loc_id)
+	def lon(self):
+		return tag_contents('lon', self.loc_id)
+	def tm(self):
+		return tag_contents('tm', self.loc_id)
+	def sunr(self):
+		return tag_contents('sunr', self.loc_id)
+	def suns(self):
+		return tag_contents('suns', self.loc_id)
+	def zone(self):
+		return tag_contents('zone', self.loc_id)
+
+class swa(forecast):
+	def __init__(self):
+		self.swa = tag_contents('swa', forecast().forecast)[0]
+		self.swa = list_at(self.swa, '\n')
+	def t(self):
+		return tag_contents('t', self.swa)
+	def l(self):
+		return tag_contents('l', self.swa)
+
+class cc(forecast):
+	def __init__(self):
+		self.cc	= tag_contents('cc', forecast().forecast)[0]
+		self.cc = list_at(self.cc, '\n')
+	def lsup(self):
+		return tag_contents('lsup', self.cc)
+	def obst(self):
+		return tag_contents('obst', self.cc)
+	def tmp(self):
+		return tag_contents('tmp', self.cc)
+	def flik(self):
+		return tag_contents('flik', self.cc)
+	def t(self):
+		return tag_contents('t', self.cc)
+	def hmid(self):
+		return tag_contents('hmid', self.cc)
+	def vis(self):
+		return tag_contents('vis', self.cc)
+	def dewp(self):
+		return tag_contents('dewp', self.cc)
+
+class bar(cc):
+	def __init__(self):
+		self.bar = tag_contents('bar', cc().cc)[0]
+		self.bar = list_at(self.bar, '\n')
+	def r(self):
+		return tag_contents('r', self.bar)
+	def d(self):
+		return tag_contents('d', self.bar)
+
+class wind(cc):
+	def __init__(self):
+		self.wind = tag_contents('wind', cc().cc)[0]
+		self.wind = list_at(self.wind, '\n')
+	def s(self):
+		return tag_contents('s', self.wind)
+	def gust(self):
+		return tag_contents('gust', self.wind)
+	def d(self):
+		return tag_contents('d', self.wind)
+	def t(self):
+		return tag_contents('t', self.wind)
+
+class uv(cc):
+	def __init__(self):
+		self.uv = tag_contents('uv', cc().cc)[0]
+		self.uv = list_at(self.uv, '\n')
+	def i(self):
+		return tag_contents('i', self.uv)
+	def t(self):
+		return tag_contents('t', self.uv)
+
+class moon(cc):
+	def __init__(self):
+		self.moon = tag_contents('moon', cc().cc)[0]
+		self.moon = list_at(self.moon, '\n')
+	def t(self):
+		return tag_contents('t', self.moon)
+
+class dayf(forecast):
+	def __init__(self):
+		self.dayf = tag_contents('dayf', forecast().forecast)[0]
+		self.dayf = list_at(self.dayf, '\n')
+	def index_and_day(self, num_days):
+		day_indexes = range(int(num_days))
+		index_dict = dict()
+		for day_index in day_indexes:
+			line = reg_tag('day d="'+str(day_index)+'"', self.dayf)[0]
+			day_value = line.split(' ')[2]
+			day = day_value.split('"')[1]
+			index_dict.update({day_index:day})
+		return index_dict
+
+class day_index(dayf):
+	def __init__(self, num):
+		self.day_index = tag_contents('day d="'+str(num)+'" .*', dayf().dayf)[0]
+		self.day_index = list_at(self.day_index, '\n')
+	def hi(self):
+		return tag_contents('hi', self.day_index)
+	def low(self):
+		return tag_contents('low', self.day_index)
+	def sunr(self):
+		return tag_contents('sunr', self.day_index)
+	def suns(self):
+		return tag_contents('suns', self.day_index)
+
+class part_d(day_index):
+	def __init__(self, num):
+		self.part_d = tag_contents('part p="d"', day_index(num).day_index)[0]
+		# get rid of wind info
+		self.tmp_part_d = list_at(self.part_d, '\n')
+		self.wind = tag_contents('wind', self.tmp_part_d)[0]
+		self.part_d.replace(self.wind, '')
+		self.part_d = list_at(self.part_d, '\n')
+		del(self.wind, self.tmp_part_d)
+
+	def t(self):
+		return tag_contents('t', self.part_d)
+	def ppcp(self):
+		return tag_contents('ppcp', self.part_d)
+	def hmid(self):
+		return tag_contents('hmid', self.part_d)
+
+class part_n(day_index):
+	def __init__(self, num):
+		self.part_n = tag_contents('part p="n"', day_index(num).day_index)[0]
+		# get rid of wind info
+		self.tmp_part_n = list_at(self.part_n, '\n')
+		self.wind = tag_contents('wind', self.tmp_part_n)[0]
+		self.part_n.replace(self.wind, '')
+		self.part_n = list_at(self.part_n, '\n')
+		del(self.wind, self.tmp_part_n)
+	def t(self):
+		return tag_contents('t', self.part_n)
+	def ppcp(self):
+		return tag_contents('ppcp', self.part_n)
+	def hmid(self):
+		return tag_contents('hmid', self.part_n)
+
+class part_d_wind(part_d):
+	def __init__(self, num):
+		self.part_d_wind = tag_contents('wind', part_d(num).part_d)[0]
+		self.part_d_wind = list_at(self.part_d_wind, '\n')
+	def s(self):
+		return tag_contents('s', self.part_d_wind)
+	def gust(self):
+		return tag_contents('gust', self.part_d_wind)
+	def t(self):
+		return tag_contents('t', self.part_d_wind)
+
+class part_n_wind(part_n):
+	def __init__(self, num):
+		self.part_n_wind = tag_contents('wind', part_n(num).part_n)[0]
+		self.part_n_wind = list_at(self.part_n_wind, '\n')
+	def s(self):
+		return tag_contents('s', self.part_n_wind)
+	def gust(self):
+		return tag_contents('gust', self.part_n_wind)
+	def t(self):
+		return tag_contents('t', self.part_n_wind)
+
+def config_list():
+	config = ["#\n",
+	"# ~/.weathergetrc\n",
+	"#\n",
+	"# NOTE: this must follow python syntax which means you cannot alter the indentions or you will experience tracebacks!\n",
+	"#\n",
+	"#### TERMINAL COLORS ###\n",
+	"# For colored output use term_code('<TERM-KEY>'). To get a current list of all available keys, run weatherget --term-keys.\n",
+	"# To print the text 'example' underlined, bold, and blue:\n",
+	"#  print term_code('underline', 'bold', 'fg_blue')+'example'+term_code('default')\n",
+	"# This feature is not supported on Windows machines.\n",
+	"# Refer to the 'TERMINAL COLORS' section of the manpage for more information.\n",
+	"#\n",
+	"\n",
+	"# current conditions\n",
+	"def current():\n",
+	" print des_name+'  ('+longitude+', '+latitude+')'\n",
+	" print obs_station+'  '+last_update\n",
+        " print'  Temperature    : '+temp+' '+temp_units\n",
+	" print '  Feels Like     : '+feels_like+' '+temp_units\n",
+        " print '  Conditions     : '+cloud_type\n",
+        " print '  Wind           : '+wind_speed+' '+speed_units+', '+wind_gust+' '+speed_units+' gusts, '+wind_dir\n",
+        " print '  Visibility     : '+visibility+' '+dist_units\n",
+        " print '  Humidity       : '+humidity+' %'\n",
+        " print '  Barometer      : '+barom_psr+' '+pressure_units+', '+barom_state\n",
+        " print '  Dewpoint       : '+dewpoint+' '+temp_units\n",
+        " print '  UV             : '+uv_state+', '+uv_index\n",
+        " print '  Sunrise        : '+sunrise\n",
+        " print '  Sunset         : '+sunset\n",
+	" print '  Moon           : '+moon_state\n",
+        " print '  Time Zone      : '+time_zone+' GMT'\n",
+        " if is_storm:\n",
+        "  print storm_watch\n",
+	"  print storm_link\n",
+	" print ''\n",
+	"\n",
+	"# extended day forecast\n",
+	"def extended():\n",
+        " print weekday\n",
+        " print '  High           : '+high_temp+' '+temp_units\n",
+        " print '  Low            : '+low_temp+' '+temp_units\n",
+        " print '  Conditions     : '+cloud_type\n",
+        " print '  Precipitation  : '+precipitation+' %'\n",
+        " print '  Wind           : '+wind_speed+' '+speed_units+', '+wind_gust+' '+speed_units+' gusts, '+wind_dir\n",
+        " print '  Humidity       : '+humidity+' %'\n",
+        " print '  Sunrise        : '+sunrise\n",
+        " print '  Sunset         : '+sunset\n",
+	" print ''\n",
+	" \n"]
+	return config
+
+def term_code(*values):
+	""" terminal codes for colors and behaviors.
+	*values will give us the ability to process a single and multiple string list not in python syntax. """
+
+	value_dict = { 'default'    :    "\x1b[0m",
+	            'bold'          :    "\x1b[1m",
+	            'underline'     :    "\x1b[4m",
+	            'blink'         :    "\x1b[5m",
+	            'reverse'       :    "\x1b[7m",
+	            'concealed'     :    "\x1b[8m",
+	
+	            'fg_black'      :    "\x1b[30m", 
+	            'fg_red'        :    "\x1b[31m",
+	            'fg_green'      :    "\x1b[32m",
+        	    'fg_yellow'     :    "\x1b[33m",
+	            'fg_blue'       :    "\x1b[34m",
+	            'fg_magenta'    :    "\x1b[35m",
+	            'fg_cyan'       :    "\x1b[36m",
+	            'fg_white'      :    "\x1b[37m",
+
+	            'bg_black'      :    "\x1b[40m", 
+	            'bg_red'        :    "\x1b[41m",
+	            'bg_green'      :    "\x1b[42m",
+	            'bg_yellow'     :    "\x1b[43m",
+	            'bg_blue'       :    "\x1b[44m",
+	            'bg_magenta'    :    "\x1b[45m",
+	            'bg_cyan'       :    "\x1b[46m",
+	            'bg_white'      :    "\x1b[47m" }
+
+	# internal use only: get the list of available keys
+	if 'show_keys' in values:
+		return value_dict.keys()
+
+	# convert inputed lists back to list from an altered tuple-list
+	if type(values[0]) == list:
+		values = values[0]
+
+	# concatenate all values and return them
+	cat_values = ''
+	for value in values:
+			cat_values = cat_values + value_dict[value]
+	return cat_values
+
+if __name__ == '__main__':
+	if TERM_KEYS:
+		print term_code('show_keys')
+		sys.exit(0)
+	if LOOKUP:
+		city, station = id_lookup(LOOKUP_CITY)
+		if len(station) == 0:
+			print 'no station id found for `'+LOOKUP_CITY+'\'\n'
+		else:
+			print ''
+			for n in range(len(station)):
+				print city[n]+': '+station[n]
+		# exit now if no other options are specified
+		if len(args) == 1:
+			sys.exit(0)
+
+	# CITY is already handled at globals
+
+	if ALT_CONFIG: 
+		if not os.path.isfile(config_file):
+			print >>sys.stderr.write('specified config file `'+config_file+'\' not found')
+			sys.exit(1)
+	else:
+		# determine config path
+		if os.name == 'posix':
+			config_file = os.path.join(os.environ["HOME"], '.weathergetrc')
+		else:
+			config_file = os.path.join(os.environ["HOMEDRIVE"], os.environ["HOMEPATH"], "weathergetrc")
+
+		if not os.path.isfile(config_file):
+			# generate config
+			try:
+				f = open(config_file, 'w')
+				for c in config_list():
+					f.write(c)
+				f.close()
+			except Exception, e:
+				print >>sys.stderr.write('could not generate config: '+str(e))
+				sys.exit(1)
+
+	if CITY or STATION_ID:	
+		temp_units	= head().ut()[0].strip()
+		dist_units	= head().ud()[0].strip()
+		speed_units	= head().us()[0].strip()
+		pressure_units	= head().up()[0].strip()
+		rain_units	= head().ur()[0].strip()
+	
+		des_name	= loc_id().dnam()[0].strip()
+		time		= loc_id().tm()[0].strip()
+		latitude	= loc_id().lat()[0].strip()
+		longitude	= loc_id().lon()[0].strip()
+		sunrise		= loc_id().sunr()[0].strip()
+		sunset		= loc_id().suns()[0].strip()
+		time_zone	= loc_id().zone()[0].strip()
+		
+		last_update	= cc().lsup()[0].strip()
+		obs_station	= cc().obst()[0].strip()
+		temp		= cc().tmp()[0].strip()
+		feels_like	= cc().flik()[0].strip()
+		cloud_type	= cc().t()[0].strip()
+		humidity	= cc().hmid()[0].strip()
+		visibility	= cc().vis()[0].strip()
+		dewpoint	= cc().dewp()[0].strip()
+	
+		is_storm = 1
+		try:
+			storm_watch	= swa().t()[0].strip()
+			storm_link	= swa().l()[0].strip()
+		except:
+			is_storm = 0
+	
+		wind_speed	= wind().s()[0].strip()
+		if wind_speed == 'calm': wind_speed = '0'
+		
+		wind_gust	= wind().gust()[0].strip()
+		if wind_gust == 'N/A': wind_gust = '0'
+		
+		wind_dir	= wind().t()[0].strip()
+
+		barom_psr	= bar().r()[0].strip()
+		barom_state	= bar().d()[0].strip()
+
+		uv_index	= uv().i()[0].strip()
+		uv_state	= uv().t()[0].strip()
+
+		moon_state	= moon().t()[0].strip()
+
+		# execute config file for stdout syntax and run current() function within it
+		try:
+			execfile(config_file)
+			current()
+		except:
+			print >>sys.stderr.write('\nError: could not process '+config_file+'!:\n')
+			raise
+			sys.exit(1)
+
+	if EXTENDED_DAY:
+		day_dict = dayf().index_and_day(NUMDAYS)
+		for num in range(int(NUMDAYS)):
+			# determine wether to get data for 'Today' or 'Tonight' based one time of day 
+			current_weekday	= Time.strftime('%A')
+			weekday		= day_dict[num]
+			if current_weekday.lower() == weekday.lower() and num < 7:
+				 current_hour = Time.strftime('%H')
+				 if int(current_hour) < 12: weekday = 'Today'
+				 else: weekday = 'Tonight'
+
+			# these will be the same for all
+			high_temp	= day_index(num).hi()[0].strip()
+			low_temp	= day_index(num).low()[0].strip()
+			sunrise		= day_index(num).sunr()[0].strip()
+			sunset		= day_index(num).suns()[0].strip()
+
+			if weekday == 'Tonight':
+				# use night time info
+				cloud_type	= part_n(num).t()[0].strip()
+				wind_speed	= part_n_wind(num).s()[0].strip()
+				if wind_speed == 'calm': wind_speed = '0'
+				wind_gust	= part_n_wind(num).gust()[0].strip()
+				if wind_gust == 'N/A': wind_gust = '0' 
+				wind_direction	= part_n_wind(num).t()[0].strip()
+				precipitation	= part_n(num).ppcp()[0].strip()
+				humidity	= part_n(num).hmid()[0].strip()
+			# else use day time info because weekday is either tonight or the next day in which case
+			# weather.com seems to use night info
+			else:
+				cloud_type	= part_d(num).t()[0].strip()
+				wind_speed	= part_d_wind(num).s()[0].strip()
+				if wind_speed == 'calm': wind_speed = '0'
+				wind_gust	= part_d_wind(num).gust()[0].strip()
+				if wind_gust == 'N/A': wind_gust = '0' 
+				wind_direction	= part_d_wind(num).t()[0].strip()
+				precipitation	= part_d(num).ppcp()[0].strip()
+				humidity	= part_d(num).hmid()[0].strip()
+			# execute config file for stdout syntax and run extended() function within it
+			try:
+				execfile(config_file)
+				extended()
+			except:
+				print >>sys.stderr.write('\nError: could not process '+config_file+'!:\n')
+				raise
+				sys.exit(1)
+
+	sys.exit(0)
