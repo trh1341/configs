@@ -608,3 +608,4 @@ endfunction
         endif
     endif
 " }
+hi Normal ctermbg=NONE
