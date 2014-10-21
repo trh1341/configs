@@ -26,9 +26,9 @@ bindsym XF86AudioStop exec ~/scripts/audiocontrols.sh stop
 bindsym XF86AudioNext exec ~/scripts/audiocontrols.sh next
 bindsym XF86AudioPrev exec ~/scripts/audiocontrols.sh stop
 bindsym XF86Tools exec urxvt -x sh -c "ncmpcpp"
-bindsym XF86AudioRaiseVolume exec amixer set Master 3+ unmute
-bindsym XF86AudioLowerVolume exec amixer set Master 3- unmute
-bindsym XF86AudioMute exec amixer set Master mute
+bindsym XF86AudioRaiseVolume exec pulseaudio-ctl up
+bindsym XF86AudioLowerVolume exec pulseaudio-ctl up
+bindsym XF86AudioMute exec pulseaudio-ctl mute
 
 # lock screen using cinnamon's screen lock
 bindsym XF86Calculator exec cinnamon-screensaver-command -l
@@ -91,19 +91,19 @@ bindsym $mod+4 workspace 4
 bindsym $mod+5 workspace 5
 bindsym $mod+6 workspace 6
 bindsym $mod+7 workspace 7
-bindsym $mod+8 workspace 8: ssh
+bindsym $mod+8 workspace 8: rtorrent
 bindsym $mod+9 workspace 9: ncmpcpp
 bindsym $mod+0 workspace 10: irssi
 
 # move focused container to workspace
 bindsym $mod+Shift+exclam move container to workspace 1: Home
-bindsym $mod+Shift+quotedbl move container to workspace 2
-bindsym $mod+Shift+sterling move container to workspace 3
+bindsym $mod+Shift+at move container to workspace 2
+bindsym $mod+Shift+numbersign move container to workspace 3
 bindsym $mod+Shift+dollar move container to workspace 4
 bindsym $mod+Shift+percent move container to workspace 5
 bindsym $mod+Shift+asciicircum move container to workspace 6
 bindsym $mod+Shift+ampersand move container to workspace 7
-bindsym $mod+Shift+asterisk move container to workspace 8: ssh
+bindsym $mod+Shift+asterisk move container to workspace 8: rtorrent
 bindsym $mod+Shift+parenleft move container to workspace 9: ncmpcpp
 bindsym $mod+Shift+parenright move container to workspace 10: irssi
 bindsym $mod+Shift+underscore move container to workspace 11: Daemons
@@ -155,6 +155,4 @@ bar {
         }
 }
 
-#exec /usr/lib/gnome-settings-daemon/gnome-settings-daemon
 exec --no-startup-id /bin/sh ~/.fehbg
-exec gnome-keyring-daemon

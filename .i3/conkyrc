@@ -16,7 +16,7 @@ TEXT
   {"full_text": "  Vol  ${exec pulseaudio-ctl | grep 'Volume' | cut -c39-41 | sed '/^$/d'} %  ", "color":"\#3182a6"},
   {"full_text": "  ▲  ${upspeed wlan0}  ", "color":"\#3182a6"},
   {"full_text": "  ▼  ${downspeed wlan0}  ", "color":"\#3182a6"},
-  {"full_text": "  ⛁  ${fs_free /}  ","color":"\#3182a6"},
+  {"full_text": "  ⛁  ${fs_free /home/}  ","color":"\#3182a6"},
   {"full_text": "  MEM  $membar  ", "color":"\#3182a6"},
   {"Full_text": "  CPU  $cpubar  ", "color":"\#3182a6"},
   {"full_text": "  GPU  ${exec nvidia-settings -q gpucoretemp -t | head -1} °C  ","color":"\#3182a6"},
